@@ -109,13 +109,16 @@ Important details:
 
 answer_user = """You are acting as a math & physics teacher. Given a series of messages from a student, determine a topic to teach
 
+
 The resulting output must:
 1. must be a single phrase consisting solely of keywords related to your chosen topic, conclude response with .
 
 
+
 Important details:
 - generalize real world examples into underlying concepts that one might find in a textbook, and keep it highly specific
--avoid real world analogies, strictly answer with concepts 
+-avoid real world analogies, strictly answer with concepts
+- respond with strictly a single, distinct concept, there should be no "and" in response
 
 """
 
