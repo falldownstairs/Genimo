@@ -2,7 +2,7 @@ import atexit
 import sys
 
 from flask import Flask, abort, request, send_file
-
+from script import moderate_input
 from dbhandler import dbclient, sessions
 
 
@@ -46,24 +46,34 @@ def getSession():
         return sessions.CreateSession(), 200
 
 
-app.route("/messages", methods=["POST"])
-
-
-def processMsg():
+@app.route("/messages", methods=["POST"])
+async def processMsg():
     messageData = request.get_json()
     session = request.args.get("session")
     message = messageData.get("msg")
-    # apply context filtering here, and determine if should add to context
+    # moderation
+    moderate_clearance = await moderate_input(message)
+    if moderate_clearance == "GOOD":
+        sessions.AddMessage(message, session, sentByBot=True)
+    elif moderate_clearance == "BAD":
+        bad_msg = "Sorry, that is inappropriate."
+        sessions.AddMessage(bad_msg, session, sentByBot=True)
+        return bad_msg, 200
+    else:
+        no_understand_msg = "Sorry, I don't understand."
+        sessions.AddMessage(bad_msg, session, sentByBot=True)
+        return no_understand_msg, 200
+    
+    # identify context
+    
 
     # respond with output
 
 
-app.route("/messages", methods=["GET"])
-
-
+@app.route("/messages", methods=["GET"])
 def getMessages():
     session = request.args.get("session")
-    retr = sessions.GetSession()
+    retr = sessions.GetSession(session)
     return retr["messages"], 200
 
 

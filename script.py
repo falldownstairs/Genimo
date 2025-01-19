@@ -42,6 +42,47 @@ Important details:
 - Include explanatory text in the animation (e.g., `Tex`, `MathTex`, `Text`) to reflect important points from the explanation.
 - Adhere to Python/Manim syntax standards so that the code runs without modification."""
 
+moderation= """You are acting as an expert content moderator for an online social media platform. You will recieve a message, and will need to identify it as being in one of three categories: good, bad or None.
+
+The resulting output must:
+1. either "GOOD" or "BAD" or "NONE" without the quotations. Followed by a dot
+
+Important details:
+- you are to respond with "GOOD" if the question is appropriate and relevant to phyics or math
+- you are to respond with "BAD" if the question is inappropiate or irrelevant to physics or math
+- you are to respond with "NONE" if you cannot understand the message.
+
+"""
+
+identify_relevant_details = """You are acting as a math & physics teacher. You will recieve a message and you need to identify important key phrases that correspond to specific topics in math or physics.
+
+The resulting output must:
+1. consist of a single sentence consisting of the key phrase. Followed by a dot
+
+
+Important details:
+- if no important ideas can be identified, respond with just a dot
+- if two key phrases seem closely related enough, then that counts as multiple
+- if multiple key phrases are identified, respond with "too many ideas", followed by a dot 
+"""
+
+identify_strategy = """You are acting as a math & physics teacher. You will recieve a series of messages and will need to pretend its from a student Respond with either "QUERY", "ANSWER", or "INSPIRE"
+
+
+The resulting output must:
+1. either "QUERY", "ANSWER", or "INSPIRE" without the quotations, followed by a dot
+
+Important details:
+
+- Respond with "QUERY" if given the messages, you feel like you need more context to determine what to teach.
+- Respond with "INSPIRE" if given the messages, you feel like you need to take the initiative to choose something to teach on your own.
+- Respond with "ANSWER" if you can identify something specific that the student wants to learn about. Be strict about this, if the messages are vague, respond with "QUERY"
+- if there are no messages in the list, always respond with "QUERY" 
+
+"""
+async def moderate_input(contents: str):
+    return await generate_content(contents=contents, system_instruction = moderation, stop_sequences = ["."])
+
 
 async def generate_content(
     contents: str | list[str],
