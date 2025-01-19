@@ -2,8 +2,18 @@ import atexit
 import sys
 
 from flask import Flask, abort, request, send_file
-from script import moderate_input, extract_context,determine_strategy, generate_queryResp, generate_inspire_content, generate_answer_content
+from flask_cors import CORS
+
 from dbhandler import dbclient, sessions
+from script import (
+    determine_strategy,
+    extract_context,
+    generate_answer_content,
+    generate_code,
+    generate_inspire_content,
+    generate_queryResp,
+    moderate_input,
+)
 
 
 def initialize_app():
@@ -23,6 +33,7 @@ class MyFlaskApp(Flask):
 
 
 app = MyFlaskApp(__name__)
+CORS(app)
 
 
 def shutdown():
@@ -36,7 +47,7 @@ atexit.register(shutdown)
 def getSession():
     session = request.args.get("session")
 
-    if session != None:
+    if session is not None:
         retr = sessions.GetSession(session)
         if retr:
             return retr, 200
@@ -63,7 +74,7 @@ async def processMsg():
         no_understand_msg = "Sorry, I don't understand."
         sessions.AddMessage(bad_msg, session, sentByBot=True)
         return no_understand_msg, 200
-    
+
     # identify context
     context = await extract_context(message)
     if context == "too many ideas":
@@ -79,14 +90,20 @@ async def processMsg():
         queryMsg = await generate_queryResp(sessions.GetMessages(session))
         sessions.AddMessage(queryMsg, sentByBot=True)
         return queryMsg, 200
-    elif currStrat == 2:
-        answerPrompt = await generate_answer_content(sessions.GetContext())
-        # pass into video generator and return a response!
-    elif currStrat == 3:
-        inspirePrompt = await generate_inspire_content(sessions.GetMessages(session))
-        # pass into video generator and return a response!
+    elif currStrat in [2, 3]:
+        if currStrat == 2:
+            answerPrompt = await generate_answer_content(sessions.GetContext())
+        else:
+            inspirePrompt = await generate_inspire_content(
+                sessions.GetMessages(session)
+            )
 
-
+        # Pass into video generator and return a response
+        video_name = await generate_code(
+            answerPrompt if currStrat == 2 else inspirePrompt
+        )
+        video_url = f"/video/{video_name}"  # Construct video URL
+        return {"video_url": video_url}, 200
 
 
 @app.route("/messages", methods=["GET"])
@@ -108,3 +125,7 @@ def get_video(video_name):
     except FileNotFoundError:
         # Handle file not found
         abort(404, description="Video not found")
+
+
+if __name__ == "__main__":
+    app.run(debug=True, port=2341)

@@ -1,106 +1,82 @@
-import React, { useEffect, useRef, useState } from "react";
-import "./test.css";
+import React, { useEffect, useRef, useState } from 'react';
+import './test.css';
 
 const VideoChatInterface = () => {
   const [messages, setMessages] = useState([]);
-  const [inputMessage, setInputMessage] = useState("");
+  const [inputMessage, setInputMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [videoUrl, setVideoUrl] = useState(null);
-  const [sessionId, setSessionId] = useState("");
+  const [sessionId, setSessionId] = useState(null);
   const videoRef = useRef(null);
 
-  // Fetch or create session on load
+  // Fetch session ID on component mount
   useEffect(() => {
-    const initializeSession = async () => {
-      try {
-        const response = await fetch("http://localhost:2341/getsession");
-        if (response.ok) {
-          const session = await response.text();
-          setSessionId(session);
-        } else {
-          console.error("Failed to initialize session");
-        }
-      } catch (error) {
-        console.error("Error initializing session:", error);
-      }
+    const fetchSession = async () => {
+      const response = await fetch('http://localhost:2341/getsession');
+      const data = await response.json();
+      setSessionId(data._id);
     };
-
-    initializeSession();
+    fetchSession();
   }, []);
 
+  // Function to send a message to the backend
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!inputMessage.trim()) return;
+    if (!inputMessage.trim() || isLoading) return;
 
     const newMessage = {
       id: Date.now(),
       text: inputMessage,
-      sender: "user",
+      sender: 'user',
       timestamp: new Date().toLocaleTimeString(),
     };
 
     setMessages((prev) => [...prev, newMessage]);
-    setInputMessage("");
+    setInputMessage('');
     setIsLoading(true);
 
     try {
-      // Send the message to the backend
-      const response = await fetch(
-        `http://localhost:2341/messages?session=${sessionId}`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ msg: inputMessage }),
-        }
-      );
+      const response = await fetch(`http://localhost:2341/messages?session=${sessionId}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ msg: inputMessage }),
+      });
+      const result = await response.json();
 
-      if (!response.ok) {
-        throw new Error("Failed to send message");
+      if (result.video_url) {
+        pollForVideo(result.video_url);
+      } else {
+        setMessages((prev) => [
+          ...prev,
+          {
+            id: Date.now(),
+            text: result,
+            sender: 'bot',
+            timestamp: new Date().toLocaleTimeString(),
+          },
+        ]);
+        setIsLoading(false);
       }
-
-      // Poll for video after sending the message
-      pollForVideo();
     } catch (error) {
-      console.error("Error sending message:", error);
+      console.error('Error sending message:', error);
       setIsLoading(false);
     }
   };
 
-  const pollForVideo = async () => {
-    const pollInterval = 5000; // 5 seconds
-    const maxRetries = 24; // ~2 minutes
-    let retries = 0;
-
-    const checkVideo = async () => {
+  // Poll the backend for video availability
+  const pollForVideo = (videoUrl) => {
+    const interval = setInterval(async () => {
       try {
-        const response = await fetch(
-          `http://localhost:2341/messages?session=${sessionId}`
-        );
+        const response = await fetch(`http://localhost:2341${videoUrl}`);
         if (response.ok) {
-          const data = await response.json();
-          const videoName = data.video; // Assuming backend sends video filename
-
-          if (videoName) {
-            const videoUrl = `http://localhost:2341/video/${videoName}`;
-            setVideoUrl(videoUrl);
-            setIsLoading(false);
-            return;
-          }
+          setVideoUrl(`http://localhost:2341${videoUrl}`);
+          setIsLoading(false);
+          clearInterval(interval);
         }
-      } catch (error) {
-        console.error("Error fetching video:", error);
+      } catch {
+        // Keep polling if the video is not ready
       }
-
-      retries++;
-      if (retries < maxRetries) {
-        setTimeout(checkVideo, pollInterval);
-      } else {
-        console.error("Video processing timed out");
-        setIsLoading(false);
-      }
-    };
-
-    checkVideo();
+    }, 5000);
   };
 
   return (
@@ -112,7 +88,7 @@ const VideoChatInterface = () => {
             <div
               key={message.id}
               className={`message-wrapper ${
-                message.sender === "user" ? "user-message" : "system-message"
+                message.sender === 'user' ? 'user-message' : 'system-message'
               }`}
             >
               <div className="message-bubble">
@@ -139,11 +115,7 @@ const VideoChatInterface = () => {
               placeholder="Type your message..."
               className="message-input"
             />
-            <button
-              type="submit"
-              disabled={isLoading}
-              className="send-button"
-            >
+            <button type="submit" disabled={isLoading} className="send-button">
               Send
             </button>
           </form>
@@ -154,12 +126,11 @@ const VideoChatInterface = () => {
       <div className="video-section">
         <div className="video-container">
           {videoUrl ? (
-            <video controls width="600">
-              <source src={videoUrl} type="video/mp4" />
+            <video controls width="600" src={videoUrl}>
               Your browser does not support the video tag.
             </video>
           ) : (
-            isLoading && <p>Loading video...</p>
+            <p>No video available yet...</p>
           )}
         </div>
       </div>
