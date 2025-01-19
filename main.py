@@ -2,7 +2,7 @@ import atexit
 import sys
 
 from flask import Flask, abort, request, send_file
-from script import moderate_input
+from script import moderate_input, extract_context,determine_strategy, generate_queryResp, generate_inspire_content, generate_answer_content
 from dbhandler import dbclient, sessions
 
 
@@ -54,7 +54,7 @@ async def processMsg():
     # moderation
     moderate_clearance = await moderate_input(message)
     if moderate_clearance == "GOOD":
-        sessions.AddMessage(message, session, sentByBot=True)
+        sessions.AddMessage(message, session)
     elif moderate_clearance == "BAD":
         bad_msg = "Sorry, that is inappropriate."
         sessions.AddMessage(bad_msg, session, sentByBot=True)
@@ -65,9 +65,28 @@ async def processMsg():
         return no_understand_msg, 200
     
     # identify context
-    
+    context = await extract_context(message)
+    if context == "too many ideas":
+        overload_msg = "Woah, slow down a bit."
+        sessions.AddMessage(overload_msg, session, sentByBot=True)
+        return overload_msg, 200
+    else:
+        sessions.AddContext(context)
+    # evaluate if enough context to generate and then respond accordingly
+    sessions.SetStrategy(await determine_strategy(sessions.GetContext(session)))
+    currStrat = sessions.GetStrategy(session)
+    if currStrat == 1:
+        queryMsg = await generate_queryResp(sessions.GetMessages(session))
+        sessions.AddMessage(queryMsg, sentByBot=True)
+        return queryMsg, 200
+    elif currStrat == 2:
+        answerPrompt = await generate_answer_content(sessions.GetContext())
+        # pass into video generator and return a response!
+    elif currStrat == 3:
+        inspirePrompt = await generate_inspire_content(sessions.GetMessages(session))
+        # pass into video generator and return a response!
 
-    # respond with output
+
 
 
 @app.route("/messages", methods=["GET"])

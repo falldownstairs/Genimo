@@ -26,4 +26,22 @@ def GetSession(id):
     
 def AddMessage(message, id,  sentByBot = False):
     retr = Session.objects.get(id = id)
-    retr.messages.append(message)
+    retr.messages.append(
+        {"sender": "user" if not sentByBot else "bot",
+         "message": message})
+
+def AddContext(ctx, id):
+    retr = Session.objects.get(id = id)
+    retr.context.append(ctx)
+
+def GetContext(id):
+    retr = Session.objects.get(id = id)
+    return retr.context
+
+def SetStrategy(newStrat, id):
+    retr = Session.objects.get(id = id)
+    retr.strategy = newStrat
+
+def GetStrategy(id):
+    retr = Session.objects.get(id = id)
+    return retr.strategy

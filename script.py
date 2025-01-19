@@ -80,9 +80,63 @@ Important details:
 - if there are no messages in the list, always respond with "QUERY" 
 
 """
+
+identitfy_userpref = """You are acting as a math & physics teacher. You will recieve a series of messages from a conversation between you and a student and you need to determine what to say to say to them to try and understand what you should teach.
+
+The resulting output must:
+1. must be in the form of a single paragraph. This is followed by a >
+
+
+Important details:
+- try to be concise
+- decide what to say based on the goal of understanding what the user would want to or should learn
+- try to be more open ended, but also guide with possible examples 
+"""
+
+inspire_user="""You are acting as a math & physics teacher. You've identified that a student doesn't seem all that interested in what you are an expert on. Given a series of messages that make up a conversation between you two, think of a topic to teach
+
+
+The resulting output must:
+1. must be a single phrase consisting solely of keywords related to your chosen topic, conclude response with .
+
+
+Important details:
+- Your goal is to inspire them to be more passionate about your field of expertise. Show them what you think would be most interesting given the conversation, and their attitude
+- generalize real world examples into underlying concepts that one might find in a textbook, and keep it highly specific
+-avoid real world analogies, strictly answer with concepts 
+
+"""
+
+answer_user = """You are acting as a math & physics teacher. Given a series of messages from a student, determine a topic to teach
+
+The resulting output must:
+1. must be a single phrase consisting solely of keywords related to your chosen topic, conclude response with .
+
+
+Important details:
+- generalize real world examples into underlying concepts that one might find in a textbook, and keep it highly specific
+-avoid real world analogies, strictly answer with concepts 
+
+"""
+
+
 async def moderate_input(contents: str):
     return await generate_content(contents=contents, system_instruction = moderation, stop_sequences = ["."])
 
+async def extract_context(contents: str):
+    return await generate_content(contents=contents, system_instruction = identify_relevant_details, stop_sequences = ["."])
+
+async def determine_strategy(contents: str):
+    return await generate_content(contents=contents, system_instruction = identify_strategy, stop_sequences = ["."])
+
+async def generate_queryResp(contents: list[str]):
+    return await generate_content(contents=contents, system_instruction = identitfy_userpref, stop_sequences = [">"])
+
+async def generate_inspire_content(contents: list[str]):
+    return await generate_content(contents=contents, system_instruction = inspire_user, stop_sequences = ["."])
+
+async def generate_answer_content(contents: list[str]):
+    return await generate_content(contents=contents, system_instruction = answer_user, stop_sequences = ["."])
 
 async def generate_content(
     contents: str | list[str],
