@@ -133,7 +133,7 @@ def convert_message_format(messages):
     if isinstance(messages, list) and messages[0] == "no context":
         return messages[1]
     # print([{"role": msg["sender"], "parts": [msg["message"]]} for msg in messages])
-    return messages[0]["message"]  # TODO: figure out chat
+    return messages[-1]["message"]  # TODO: figure out chat for gemini
 
 
 async def moderate_input(contents: str):
