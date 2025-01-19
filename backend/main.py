@@ -69,48 +69,54 @@ async def processMsg():
     elif moderate_clearance == "BAD":
         bad_msg = "Sorry, that is inappropriate."
         sessions.AddMessage(bad_msg, session, sentByBot=True)
-        return bad_msg, 200
+        return {"msg": {"bot" : bad_msg}}, 200
     else:
         no_understand_msg = "Sorry, I don't understand."
-        sessions.AddMessage(bad_msg, session, sentByBot=True)
-        return no_understand_msg, 200
+        sessions.AddMessage(no_understand_msg, session, sentByBot=True)
+        return {"msg": {"bot" :no_understand_msg}}, 200
 
     # identify context
     context = await extract_context(message)
     if context == "too many ideas":
         overload_msg = "Woah, slow down a bit."
         sessions.AddMessage(overload_msg, session, sentByBot=True)
-        return overload_msg, 200
+        return {"msg": {"bot" :overload_msg}}, 200
+    elif context == "no context":
+        pass
     else:
-        sessions.AddContext(context)
+        sessions.AddContext(context, session)
     # evaluate if enough context to generate and then respond accordingly
-    sessions.SetStrategy(await determine_strategy(sessions.GetContext(session)))
+    ctx = sessions.GetContext(session)
+    newStrat = await determine_strategy(ctx)
+    sessions.SetStrategy(int(newStrat), session)
     currStrat = sessions.GetStrategy(session)
-    if currStrat == 1:
-        queryMsg = await generate_queryResp(sessions.GetMessages(session))
-        sessions.AddMessage(queryMsg, sentByBot=True)
-        return queryMsg, 200
-    elif currStrat in [2, 3]:
-        if currStrat == 2:
-            answerPrompt = await generate_answer_content(sessions.GetContext())
-        else:
-            inspirePrompt = await generate_inspire_content(
-                sessions.GetMessages(session)
-            )
+    print(f"finished strategizing: {currStrat}")
+    if currStrat == sessions.Strategy.QUERY:
+        print("query more!")
+        queryMsg = await generate_queryResp([f"{entry}" for entry in sessions.GetMessages(session)])
+        sessions.AddMessage(queryMsg, session,  sentByBot=True)
+        return {"msg": {"bot" :queryMsg}}, 200
+    else:
+        print("generate!")
+        # if currStrat == sessions.Strategy.ANSWER:
+        #     answerPrompt = await generate_answer_content(sessions.GetContext())
+        # else:
+        #     inspirePrompt = await generate_inspire_content(
+        #         sessions.GetMessages(session)
+        #     )
 
-        # Pass into video generator and return a response
-        video_name = await generate_code(
-            answerPrompt if currStrat == 2 else inspirePrompt
-        )
-        video_url = f"/video/{video_name}"  # Construct video URL
-        return {"video_url": video_url}, 200
+        # # Pass into video generator and return a response
+        # video_name = await generate_code(
+        #     answerPrompt if currStrat == 2 else inspirePrompt
+        # )
+        # video_url = f"/video/{video_name}"  # Construct video URL
+        # return {"msg": {"bot" : video_url}}, 200
 
 
 @app.route("/messages", methods=["GET"])
 def getMessages():
     session = request.args.get("session")
-    retr = sessions.GetSession(session)
-    return retr["messages"], 200
+    return {"msgs": sessions.GetMessages(session)}, 200
 
 
 # Dynamic route to serve videos

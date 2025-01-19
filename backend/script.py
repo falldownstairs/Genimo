@@ -51,6 +51,7 @@ Important details:
 - you are to respond with "GOOD" if the question is appropriate and relevant to phyics or math
 - you are to respond with "BAD" if the question is inappropiate or irrelevant to physics or math
 - you are to respond with "NONE" if you cannot understand the message.
+- you are allowed to respond to polite introductions with "GOOD"
 
 """
 
@@ -64,19 +65,20 @@ Important details:
 - if no important ideas can be identified, respond with just a dot
 - if two key phrases seem closely related enough, then that counts as multiple
 - if multiple key phrases are identified, respond with "too many ideas", followed by a dot 
+- if there are none, then respond with "no context", followed by a dot 
 """
 
-identify_strategy = """You are acting as a math & physics teacher. You will recieve a series of messages and will need to pretend its from a student Respond with either "QUERY", "ANSWER", or "INSPIRE"
+identify_strategy = """You are acting as a math & physics teacher. You will recieve a series of messages and will need to pretend its from a student Respond with either "1", "2", or "3"
 
 
 The resulting output must:
-1. either "QUERY", "ANSWER", or "INSPIRE" without the quotations, followed by a dot
+1. either "1", "2", or "3" without the quotations, followed by a dot
 
 Important details:
 
-- Respond with "QUERY" if given the messages, you feel like you need more context to determine what to teach.
-- Respond with "INSPIRE" if given the messages, you feel like you need to take the initiative to choose something to teach on your own.
-- Respond with "ANSWER" if you can identify something specific that the student wants to learn about. Be strict about this, if the messages are vague, respond with "QUERY"
+- Respond with "1" if given the messages, you feel like you need more context to determine what to teach.
+- Respond with "2" if given the messages, you feel like you need to take the initiative to choose something to teach on your own.
+- Respond with "3" if you can identify something specific that the student wants to learn about. Be strict about this, if the messages are vague, respond with "QUERY"
 - if there are no messages in the list, always respond with "QUERY" 
 
 """
@@ -129,7 +131,7 @@ async def moderate_input(contents: str):
 async def extract_context(contents: str):
     return await generate_content(contents=contents, system_instruction = identify_relevant_details, stop_sequences = ["."])
 
-async def determine_strategy(contents: str):
+async def determine_strategy(contents: list[str]):
     return await generate_content(contents=contents, system_instruction = identify_strategy, stop_sequences = ["."])
 
 async def generate_queryResp(contents: list[str]):
