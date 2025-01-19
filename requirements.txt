@@ -1,3 +1,5 @@
 python-dotenv
 flask
 pymongo
+google-genai
+manim
