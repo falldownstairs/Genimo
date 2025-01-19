@@ -33,7 +33,7 @@ class MyFlaskApp(Flask):
 
 
 app = MyFlaskApp(__name__)
-CORS(app)
+CORS(app, resources={r"/*": {"origins": "*"}})
 
 
 def shutdown():
