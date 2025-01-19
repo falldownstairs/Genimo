@@ -98,19 +98,19 @@ async def processMsg():
         return {"msg": {"bot" :queryMsg}}, 200
     else:
         print("generate!")
-        # if currStrat == sessions.Strategy.ANSWER:
-        #     answerPrompt = await generate_answer_content(sessions.GetContext())
-        # else:
-        #     inspirePrompt = await generate_inspire_content(
-        #         sessions.GetMessages(session)
-        #     )
+        promptToUse = "default"
+        if currStrat == sessions.Strategy.ANSWER:
+            promptToUse = await generate_answer_content(sessions.GetContext(session))
+        else:
+            promptToUse = await generate_inspire_content(
+                sessions.GetMessages(session)
+            )
 
-        # # Pass into video generator and return a response
-        # video_name = await generate_code(
-        #     answerPrompt if currStrat == 2 else inspirePrompt
-        # )
-        # video_url = f"/video/{video_name}"  # Construct video URL
-        # return {"msg": {"bot" : video_url}}, 200
+        print(promptToUse)
+        # Pass into video generator and return a response
+        video_name = await generate_code(promptToUse)
+        video_url = f"/video/{video_name}"  # Construct video URL
+        return {"msg": {"bot" : video_url}}, 200
 
 
 @app.route("/messages", methods=["GET"])
