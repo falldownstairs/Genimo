@@ -1,0 +1,10 @@
+.top{
+  display: inline;
+}
+
+.textfield{
+  width: 80%;
+}
+.submitfield{
+  width: 20%;
+}

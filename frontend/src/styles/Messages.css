@@ -1,0 +1,20 @@
+:root {
+  --padding: 1rem;
+  --margin: 1rem;
+}
+
+
+.messagebox {
+  background-color: #3498db;
+
+
+  border-radius: var(--padding);
+  box-sizing: border-box;
+
+  width: calc(50vw - (2 * var(--margin)));
+  height: calc(100vh - (2 * var(--margin)));
+  float: left;
+  padding: var(--padding);
+  margin: var(--margin);
+}
+  

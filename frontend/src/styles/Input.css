@@ -1,0 +1,48 @@
+.botbox {
+    background-color: #3498db;
+    border-radius: var(--padding);
+    box-sizing: border-box;
+    width: calc(50vw - (2 * var(--margin)));
+    height: calc(30vh - (2 * var(--margin)));
+    margin: var(--margin);
+    padding: var(--padding);
+    display: flex;
+  }
+  
+  .input-form {
+    width: 100%;
+    height: 100%;
+    position: relative; /* Ensures elements inside can be positioned absolutely */
+  }
+  
+  .input-field {
+    background-color: transparent;
+    border: none;
+    outline: none;
+    color: white;
+    font-size: 1rem;
+    resize: none; /* Prevents resizing of the textarea */
+    width: 100%;
+    height: calc(100% - 1.75rem); /* Leaves space for the button */
+  }
+  
+  .input-field::placeholder {
+    color: rgba(255, 255, 255, 0.7);
+    font-style: italic;
+  }
+  
+  .submit-button {
+    background-color: transparent;
+    border: none;
+    color: white;
+    font-size: 2rem;
+    cursor: pointer;
+    padding: 0rem;
+    outline: none;
+    margin-left: calc(96%);
+  }
+  
+  .submit-button:hover {
+    color: #ffffffaa;
+  }
+  

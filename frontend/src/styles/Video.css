@@ -1,0 +1,21 @@
+:root {
+  --padding: 1rem;
+  --margin: 1rem;
+}
+
+
+.videobox {
+  background-color: #3498db;
+
+
+  border-radius: var(--padding);
+  box-sizing: border-box;
+
+  width: calc(50vw - (2 * var(--margin)));
+  height: calc(70vh - (2 * var(--margin)));
+  float: left;
+  padding: var(--padding);
+  margin-top: var(--margin);
+  margin-bottom: var(--margin);
+}
+  
