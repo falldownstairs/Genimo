@@ -6,7 +6,7 @@ import "./App.css"
 function App(){
 
   return (
-    <>
+    <div class = "bg">
       <div class="left">
         <Messages/>
         
@@ -16,7 +16,7 @@ function App(){
         <Input/>
       </div>
       
-    </>
+    </div>
   );
 };
 
