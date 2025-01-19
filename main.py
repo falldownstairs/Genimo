@@ -24,7 +24,6 @@ def shutdown():
     dbclient.CloseClient()
 atexit.register(shutdown)
 
-# section
 @app.route("/getsession")
 def getSession():
     session = request.args.get('session')
@@ -38,3 +37,20 @@ def getSession():
     else:
         return sessions.CreateSession(), 200
 
+app.route("/messages", methods = ["POST"])
+def processMsg():
+    messageData = request.get_json()
+    session = request.args.get('session')
+    message = messageData.get("msg")
+    # apply context filtering here, and determine if should add to context
+
+
+
+    # respond with output
+
+
+app.route("/messages", methods = ["GET"])
+def getMessages():
+    session = request.args.get('session')
+    retr = sessions.GetSession()
+    return retr["messages"], 200
