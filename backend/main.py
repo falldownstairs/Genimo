@@ -1,17 +1,22 @@
+import asyncio
 import atexit
+import json
 import os
-import sys
 
-from flask import Flask, abort, request, send_file
+from flask import Flask, Response, abort, request, send_file
 from flask_cors import CORS
 from script import (
     determine_strategy,
+    explanation_to_code,
     extract_context,
     generate_answer_content,
     generate_code,
+    generate_content,
     generate_inspire_content,
     generate_queryResp,
     moderate_input,
+    query_to_explanation,
+    render_video,
 )
 
 from dbhandler import dbclient, sessions
@@ -121,6 +126,110 @@ async def processMsg():
 def getMessages():
     session = request.args.get("session")
     return {"msgs": sessions.GetMessages(session)}, 200
+
+
+def sync_generator(async_gen):
+    loop = asyncio.new_event_loop()
+    try:
+        while True:
+            yield loop.run_until_complete(anext(async_gen))
+    except StopAsyncIteration:
+        pass
+    finally:
+        loop.close()
+
+
+@app.route("/messages/stream", methods=["GET"])
+def processStreamMsg():
+    message = request.args.get("msg")
+    session = request.args.get("session")
+
+    async def generate_async():
+        # Send initial thinking status
+        ymessage = "Thinking..."
+        yield f"data: {json.dumps({'type': 'status', 'message': ymessage})}\n\n"
+
+        # Moderation check
+        moderate_clearance = await moderate_input(message)
+        if moderate_clearance == "GOOD":
+            sessions.AddMessage(message, session)
+        elif moderate_clearance == "BAD":
+            bad_msg = "Sorry, that is inappropriate."
+            sessions.AddMessage(bad_msg, session, sentByBot=True)
+            yield f"data: {json.dumps({'type': 'message', 'message': bad_msg})}\n\n"
+            return
+        else:
+            no_understand_msg = "Sorry, I don't understand."
+            sessions.AddMessage(no_understand_msg, session, sentByBot=True)
+            yield f"data: {json.dumps({'type': 'message', 'message': no_understand_msg})}\n\n"
+            return
+
+        # Context identification
+        context = await extract_context(message)
+        if context == "too many ideas":
+            overload_msg = "Woah, slow down a bit."
+            sessions.AddMessage(overload_msg, session, sentByBot=True)
+            yield f"data: {json.dumps({'type': 'message', 'message': overload_msg})}\n\n"
+            return
+        elif context == "no context":
+            pass
+        else:
+            sessions.AddContext(context, session)
+
+        # Strategy determination
+        ctx = sessions.GetContext(session)
+        newStrat = await determine_strategy(ctx)
+        sessions.SetStrategy(int(newStrat), session)
+        currStrat = sessions.GetStrategy(session)
+
+        if currStrat == sessions.Strategy.QUERY:
+            yield f"data: {json.dumps({'type': 'status', 'message': 'Let me ask you something...'})}\n\n"
+            queryMsg = await generate_queryResp(
+                [f"{entry}" for entry in sessions.GetMessages(session)]
+            )
+            sessions.AddMessage(queryMsg, session, sentByBot=True)
+            yield f"data: {json.dumps({'type': 'message', 'message': queryMsg})}\n\n"
+            return
+
+        # Generate content
+        promptToUse = "default"
+        if currStrat == sessions.Strategy.ANSWER:
+            promptToUse = await generate_answer_content(sessions.GetContext(session))
+        else:
+            promptToUse = await generate_inspire_content(sessions.GetMessages(session))
+
+        ymessage += f"\nI'll explain about: {promptToUse}"
+
+        yield f"data: {json.dumps({'type': 'status', 'message': ymessage})}\n\n"
+
+        # Generate explanation
+        ymessage += "\nI'm thinking of an explanation..."
+        yield f"data: {json.dumps({'type': 'status', 'message': ymessage})}\n\n"
+
+        explanation = await generate_content(promptToUse, query_to_explanation)
+        print("Received explanation")
+
+        # Generate code
+        ymessage += "\nI'm building the animations..."
+        yield f"data: {json.dumps({'type': 'status', 'message': ymessage})}\n\n"
+
+        code = await generate_content(explanation, explanation_to_code)
+        code = code.replace("```python", "").replace("```", "")
+        code += "\nscene = Animation()\nscene.render()\n"
+        print("Received code")
+
+        # Render video
+        ymessage += "\nI'm rendering the video..."
+        yield f"data: {json.dumps({'type': 'status', 'message': ymessage})}\n\n"
+
+        render_video(code)
+        print("Rendered video")
+
+        video_name = "Animation"
+        video_url = f"/video/{video_name}"
+        yield f"data: {json.dumps({'type': 'video', 'url': video_url})}\n\n"
+
+    return Response(sync_generator(generate_async()), mimetype="text/event-stream")
 
 
 # Dynamic route to serve videos

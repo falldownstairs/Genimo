@@ -9,10 +9,11 @@ export default function Home() {
     const [isLoading, setIsLoading] = useState(false);
     const [videoUrl, setVideoUrl] = useState(null);
     const [sessionId, setSessionId] = useState(null);
-    const [chatWidth, setChatWidth] = useState(33.333); // Chat width in percentage
+    const [chatWidth, setChatWidth] = useState(33.333);
     const videoRef = useRef(null);
     const params = useSearchParams();
     const isDragging = useRef(false);
+    const processingMessageId = useRef(null);
 
     useEffect(() => {
         const loadedSessionId = params.get("session");
@@ -39,11 +40,33 @@ export default function Home() {
         }
     }, [params]);
 
+    const addProcessingMessage = (text) => {
+        const newMessage = {
+            id: Date.now(),
+            text: text,
+            sender: "bot",
+            timestamp: new Date().toLocaleTimeString(),
+            isProcessing: true,
+        };
+        processingMessageId.current = newMessage.id;
+        setMessages((prev) => [...prev, newMessage]);
+    };
+
+    const updateProcessingMessage = (text) => {
+        setMessages((prev) =>
+            prev.map((msg) =>
+                msg.id === processingMessageId.current ? { ...msg, text } : msg
+            )
+        );
+    };
+
+    const removeProcessingMessages = () => {
+        setMessages((prev) => prev.filter((msg) => !msg.isProcessing));
+    };
+
     const handleSubmit = async (e) => {
         e.preventDefault();
-        if (inputMessage.trim() === "" || isLoading) {
-            return;
-        }
+        if (inputMessage.trim() === "" || isLoading) return;
 
         const newMessage = {
             id: Date.now(),
@@ -57,40 +80,48 @@ export default function Home() {
         setIsLoading(true);
 
         try {
-            const res = await fetch(
-                `http://127.0.0.1:2341/messages?session=${sessionId}`,
-                {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json",
-                    },
-                    body: JSON.stringify({
-                        msg: inputMessage,
-                    }),
-                }
+            // Add initial processing message
+            addProcessingMessage("Thinking...");
+
+            const eventSource = new EventSource(
+                `http://127.0.0.1:2341/messages/stream?session=${sessionId}&msg=${encodeURIComponent(
+                    inputMessage
+                )}`
             );
 
-            if (res.ok) {
-                const result = await res.json();
+            eventSource.onmessage = (event) => {
+                const data = JSON.parse(event.data);
 
-                if (result.msg.bot.startsWith("/video/")) {
-                    setVideoUrl(`http://127.0.0.1:2341${result.msg.bot}`);
-                } else {
+                if (data.type === "status") {
+                    updateProcessingMessage(data.message);
+                } else if (data.type === "video") {
+                    eventSource.close();
+                    removeProcessingMessages();
+                    setVideoUrl(`http://127.0.0.1:2341${data.url}`);
+                } else if (data.type === "message") {
+                    eventSource.close();
+                    removeProcessingMessages();
                     setMessages((prev) => [
                         ...prev,
                         {
                             id: Date.now(),
-                            text: result.msg.bot,
+                            text: data.message,
                             sender: "bot",
                             timestamp: new Date().toLocaleTimeString(),
                         },
                     ]);
                 }
-            }
+            };
+
+            eventSource.onerror = () => {
+                eventSource.close();
+                setIsLoading(false);
+                removeProcessingMessages();
+            };
         } catch (error) {
             console.error("Error sending message:", error);
-        } finally {
             setIsLoading(false);
+            removeProcessingMessages();
         }
     };
 
@@ -132,7 +163,9 @@ export default function Home() {
                             }`}
                         >
                             <div className="message-bubble">
-                                <p>{message.text}</p>
+                                <p style={{ whiteSpace: "pre-wrap" }}>
+                                    {message.text}
+                                </p>
                                 <span className="timestamp">
                                     {message.timestamp}
                                 </span>
@@ -141,9 +174,9 @@ export default function Home() {
                     ))}
                     {isLoading && (
                         <div className="message-wrapper system-message">
-                            <div className="message-bubble">
+                            {/* <div className="message-bubble">
                                 <p>Processing...</p>
-                            </div>
+                            </div> */}
                         </div>
                     )}
                 </div>
@@ -169,10 +202,7 @@ export default function Home() {
             </div>
 
             {/* Divider */}
-            <div
-                className="divider"
-                onMouseDown={startDragging}
-            ></div>
+            <div className="divider" onMouseDown={startDragging}></div>
 
             {/* Video Section */}
             <div
