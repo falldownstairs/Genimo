@@ -9,8 +9,10 @@ export default function Home() {
     const [isLoading, setIsLoading] = useState(false);
     const [videoUrl, setVideoUrl] = useState(null);
     const [sessionId, setSessionId] = useState(null);
+    const [chatWidth, setChatWidth] = useState(33.333); // Chat width in percentage
     const videoRef = useRef(null);
     const params = useSearchParams();
+    const isDragging = useRef(false);
 
     useEffect(() => {
         const loadedSessionId = params.get("session");
@@ -72,10 +74,8 @@ export default function Home() {
                 const result = await res.json();
 
                 if (result.msg.bot.startsWith("/video/")) {
-                    // If the response contains a video URL
                     setVideoUrl(`http://127.0.0.1:2341${result.msg.bot}`);
                 } else {
-                    // If it's a text message
                     setMessages((prev) => [
                         ...prev,
                         {
@@ -94,10 +94,33 @@ export default function Home() {
         }
     };
 
+    const handleDrag = (e) => {
+        if (!isDragging.current) return;
+        const newChatWidth = (e.clientX / window.innerWidth) * 100;
+        if (newChatWidth >= 20 && newChatWidth <= 70) {
+            setChatWidth(newChatWidth);
+        }
+    };
+
+    const stopDragging = () => {
+        isDragging.current = false;
+        document.removeEventListener("mousemove", handleDrag);
+        document.removeEventListener("mouseup", stopDragging);
+    };
+
+    const startDragging = () => {
+        isDragging.current = true;
+        document.addEventListener("mousemove", handleDrag);
+        document.addEventListener("mouseup", stopDragging);
+    };
+
     return (
         <div className="app-container">
             {/* Messages Section */}
-            <div className="messages-section">
+            <div
+                className="messages-section"
+                style={{ width: `${chatWidth}%` }}
+            >
                 <div className="messages-display">
                     {messages.map((message) => (
                         <div
@@ -145,8 +168,17 @@ export default function Home() {
                 </div>
             </div>
 
+            {/* Divider */}
+            <div
+                className="divider"
+                onMouseDown={startDragging}
+            ></div>
+
             {/* Video Section */}
-            <div className="video-section">
+            <div
+                className="video-section"
+                style={{ width: `${100 - chatWidth}%` }}
+            >
                 <div className="video-container">
                     {videoUrl ? (
                         <video

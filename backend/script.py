@@ -253,5 +253,5 @@ def generate_code_sync(query: str) -> str:
 
 # test code
 if __name__ == "__main__":
-    query: str = "Action reaction forces, newton's third law"
+    query: str = "gravity"
     asyncio.run(generate_code(query))
