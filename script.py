@@ -77,6 +77,15 @@ def generate_content_sync(
     return response.text
 
 
+class Animation:
+    def render(self) -> None:
+        print("Default render method")
+
+
+def render_video(code: str) -> None:
+    exec(code)
+
+
 async def generate_code(query: str) -> str:
     explanation = await generate_content(query, query_to_explanation)
     print("Received explanation")
@@ -92,13 +101,19 @@ async def generate_code(query: str) -> str:
     return code
 
 
-class Animation:
-    def render(self) -> None:
-        print("Default render method")
+def generate_code_sync(query: str) -> str:
+    explanation = generate_content_sync(query, query_to_explanation)
+    print("Received explanation")
 
+    code = generate_content_sync(explanation, explanation_to_code)
+    code = code.replace("```python", "").replace("```", "")
+    code += "\nscene = Animation()\nscene.render()\n"
+    print("Received code")
 
-def render_video(code: str) -> None:
-    exec(code)
+    render_video(code)
+    print("Rendered video")
+
+    return code
 
 
 # test code
