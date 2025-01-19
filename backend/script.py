@@ -131,10 +131,9 @@ def convert_message_format(messages):
         list: List of message dictionaries in new format
     """
     # print("messages", messages, type(messages), dir(messages))
-    if isinstance(messages, list) and messages[0] == "no context":
-        return messages[1]
+    messages = [str(entry) for entry in messages]
     # print([{"role": msg["sender"], "parts": [msg["message"]]} for msg in messages])
-    return messages[-1]["message"]  # TODO: figure out chat for gemini
+    return ','.join(messages)  # TODO: figure out chat for gemini
 
 
 async def moderate_input(contents: str):
