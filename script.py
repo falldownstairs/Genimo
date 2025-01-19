@@ -43,13 +43,35 @@ Important details:
 - Adhere to Python/Manim syntax standards so that the code runs without modification."""
 
 
-async def generate_content(contents: str | list[str], system_instruction: str) -> str:
+async def generate_content(
+    contents: str | list[str],
+    system_instruction: str,
+    stop_sequences: list[str] | None = None,
+) -> str:
     response = await client.aio.models.generate_content(
         model="gemini-2.0-flash-exp",
         contents=contents,
         config=types.GenerateContentConfig(
             system_instruction=system_instruction,
             temperature=0,
+            stop_sequences=stop_sequences,
+        ),
+    )
+    return response.text
+
+
+def generate_content_sync(
+    contents: str | list[str],
+    system_instruction: str,
+    stop_sequences: list[str] | None = None,
+) -> str:
+    response = client.models.generate_content(
+        model="gemini-2.0-flash-exp",
+        contents=contents,
+        config=types.GenerateContentConfig(
+            system_instruction=system_instruction,
+            temperature=0,
+            stop_sequences=stop_sequences,
         ),
     )
     return response.text
