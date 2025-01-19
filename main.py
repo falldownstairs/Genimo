@@ -36,5 +36,5 @@ def getSession():
         else:
             return sessions.CreateSession(), 200
     else:
-        return "No Session specificed",  400
+        return sessions.CreateSession(), 200
 
