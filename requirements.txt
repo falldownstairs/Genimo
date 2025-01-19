@@ -1,5 +1,5 @@
 python-dotenv
 flask
-pymongo
+mongoengine
 google-genai
 manim
