@@ -155,7 +155,7 @@ export default function Home() {
                 <div className="messages-display">
                     {messages.map((message) => (
                         <div
-                            key={message.id}
+                            key={messages.indexOf(message)}
                             className={`message-wrapper ${
                                 message.sender === "user"
                                     ? "user-message"
