@@ -249,4 +249,4 @@ def get_video(video_name):
 
 
 if __name__ == "__main__":
-    app.run(port=2341)
+    app.run(port=os.getenv("PORT", 2341))
