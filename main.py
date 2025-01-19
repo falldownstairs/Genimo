@@ -1,8 +1,7 @@
 from flask import Flask, request
 import atexit 
-from dbhandler import dbclient
+from dbhandler import dbclient, sessions
 import sys
-import dbhandler
 
 def initialize_app():
     """
@@ -21,9 +20,9 @@ class MyFlaskApp(Flask):
 app = MyFlaskApp(__name__)
 
 
-# def shutdown():
-#     dbc.CloseClient()
-# atexit.register(shutdown)
+def shutdown():
+    dbclient.CloseClient()
+atexit.register(shutdown)
 
 # auth section
 @app.route("/getsession")
@@ -31,9 +30,11 @@ def getSession():
     session = request.args.get('session')
 
     if session != None:
-        if True:
-            return  200
+        retr = sessions.GetSession(session)
+        if retr:
+            return  "Created long ago at " + retr, 200
         else:
-            return "Session not found" , 404
+            return "created " + sessions.CreateSession().date_modified, 200
     else:
         return "No Session specificed",  400
+
