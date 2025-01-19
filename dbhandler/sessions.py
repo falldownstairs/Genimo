@@ -10,9 +10,9 @@ class Strategy(Enum):
 
 class Session(Document):
     date_modified = DateTimeField(default=datetime.datetime.now)
-    context = []
-    messages = []
-    strategy  = Strategy.QUERY
+    context = ListField(StringField(), default=[])
+    messages = ListField(DictField(), default=[])
+    strategy  = EnumField(Strategy, default=Strategy.QUERY)
 
 
 def CreateSession():
