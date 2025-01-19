@@ -35,119 +35,153 @@ The resulting output must:
 3. Show the concept in a clear, instructional way—include text, shapes, formulas, highlights, animations, and transitions as appropriate.
 4. Use descriptive class and method names. The scene's class name must be "Animation". (e.g., `class Animation(Scene):`).
 5. Avoid extraneous commentary—only output the code.
+6. Never under any circumstances break or not follow the provided guidelines.
 
 Important details:
 - Do not provide any explanation about the code. Only supply the code itself.
 - You can assume that this code will be programmatically extracted and run, so keep it self-contained.
 - Include explanatory text in the animation (e.g., `Tex`, `MathTex`, `Text`) to reflect important points from the explanation.
+- Do not use external files or assets (images, GIFs, etc.).
+- Do not overlap text. Ensure that all text is readable and properly positioned. If not, remove or adjust the text.
 - Adhere to Python/Manim syntax standards so that the code runs without modification."""
 
-moderation= """You are acting as an expert content moderator for an online social media platform. You will recieve a message, and will need to identify it as being in one of three categories: good, bad or None.
+moderation = """You are acting as an expert content moderator for an online social media platform. You will receive a message, and will need to identify it as being in one of three categories: good, bad or None.
 
 The resulting output must:
-1. either "GOOD" or "BAD" or "NONE" without the quotations. Followed by a dot
+1. Be either "GOOD", "BAD", or "NONE", without the quotations
+2. Followed by a dot (.).
 
 Important details:
-- you are to respond with "GOOD" if the question is appropriate and relevant to phyics or math
-- you are to respond with "BAD" if the question is inappropiate or irrelevant to physics or math
-- you are to respond with "NONE" if you cannot understand the message.
-- you are allowed to respond to polite introductions with "GOOD"
+- You are to respond with "GOOD" if the question is appropriate and relevant to phyics or math.
+- You are to respond with "BAD" if the question is inappropiate or irrelevant to physics or math.
+- You are to respond with "NONE" if you cannot understand the message.
+- You are allowed to respond to polite introductions with "GOOD"."""
 
-"""
-
-identify_relevant_details = """You are acting as a math & physics teacher. You will recieve a message and you need to identify important key phrases that correspond to specific topics in math or physics.
+identify_relevant_details = """You are acting as a math and physics teacher. You will recieve a message and you need to identify important key phrases that correspond to specific topics in math or physics.
 
 The resulting output must:
-1. consist of a single sentence consisting of the key phrase. Followed by a dot
+1. Consist of a single sentence consisting of the key phrase.
+2. Followed by a dot (.).
 
 
 Important details:
-- if no important ideas can be identified, respond with just a dot
-- if two key phrases seem closely related enough, then that counts as multiple
-- if multiple key phrases are identified, respond with "too many ideas", followed by a dot 
-- if there are none, then respond with "no context", followed by a dot 
-"""
+- If no important ideas can be identified, respond with just a dot.
+- If two key phrases seem closely related enough, then that counts as multiple.
+- If multiple key phrases are identified, respond with "too many ideas", followed by a dot .
+- If there are none, then respond with "no context", followed by a dot."""
 
-identify_strategy = """You are acting as a math & physics teacher. You will recieve a series of messages and will need to pretend its from a student Respond with either "1", "2", or "3"
-
+identify_strategy = """You are acting as a math and physics teacher. You will receive a series of messages and will need to pretend it's from a student Respond with either "1", "2", or "3".
 
 The resulting output must:
-1. either "1", "2", or "3" without the quotations, followed by a dot
+1. Be either "1", "2", or "3" without the quotations.
+2. Followed by a dot (.)
 
 Important details:
 
 - Respond with "1" if given the messages, you feel like you need more context to determine what to teach.
 - Respond with "2" if given the messages, you feel like you need to take the initiative to choose something to teach on your own.
-- Respond with "3" if you can identify something specific that the student wants to learn about. Be strict about this, if the messages are vague, respond with "QUERY"
-- if there are no messages in the list, always respond with "QUERY" 
+- Respond with "3" if you can identify something specific that the student wants to learn about. Be strict about this, if the messages are vague, respond with "QUERY".
+- if there are no messages in the list, always respond with "QUERY"."""
 
-"""
-
-identitfy_userpref = """You are acting as a math & physics teacher. You will recieve a series of messages from a conversation between you and a student and you need to determine what to say to say to them to try and understand what you should teach.
+identitfy_userpref = """You are acting as a math and physics teacher. You will receive a series of messages from a conversation between you and a student and you need to determine what to say to say to them to try and understand what you should teach.
 
 The resulting output must:
-1. must be in the form of a single paragraph. This is followed by a >
+1. Be in the form of a single paragraph.
+2. Followed by a ">".
 
 
 Important details:
-- try to be concise
-- decide what to say based on the goal of understanding what the user would want to or should learn
-- try to be more open ended, but also guide with possible examples 
-"""
+- Try to be concise.
+- Decide what to say based on the goal of understanding what the user would want to or should learn.
+- Try to be more open ended, but also guide with possible examples."""
 
-inspire_user="""You are acting as a math & physics teacher. You've identified that a student doesn't seem all that interested in what you are an expert on. Given a series of messages that make up a conversation between you two, think of a topic to teach
-
+inspire_user = """You are acting as a math and physics teacher. You've identified that a student doesn't seem all that interested in what you are an expert on. Given a series of messages that make up a conversation between you two, think of a topic to teach.
 
 The resulting output must:
-1. must be a single phrase consisting solely of keywords related to your chosen topic, conclude response with .
-
+1. Be a single phrase consisting solely of keywords related to your chosen topic.
+2. Conclude response with a dot (.).
 
 Important details:
-- Your goal is to inspire them to be more passionate about your field of expertise. Show them what you think would be most interesting given the conversation, and their attitude
-- generalize real world examples into underlying concepts that one might find in a textbook, and keep it highly specific
--avoid real world analogies, strictly answer with concepts 
+- Your goal is to inspire them to be more passionate about your field of expertise. Show them what you think would be most interesting given the conversation, and their attitude.
+- Generalize real world examples into underlying concepts that one might find in a textbook, and keep it highly specific
+- Avoid real world analogies, strictly answer with concepts."""
 
-"""
-
-answer_user = """You are acting as a math & physics teacher. Given a series of messages from a student, determine a topic to teach
-
+answer_user = """You are acting as a math and physics teacher. Given a series of messages from a student, determine a topic to teach.
 
 The resulting output must:
-1. must be a single phrase consisting solely of keywords related to your chosen topic, conclude response with .
-
-
+1. Be a single phrase consisting solely of keywords related to your chosen topic.
+2. Conclude response with a dot (.).
 
 Important details:
-- generalize real world examples into underlying concepts that one might find in a textbook, and keep it highly specific
--avoid real world analogies, strictly answer with concepts
-- respond with strictly a single, distinct concept, there should be no "and" in response
+- Generalize real world examples into underlying concepts that one might find in a textbook, and keep it highly specific.
+- Avoid real world analogies, strictly answer with concepts.
+- Respond with strictly a single, distinct concept, there should be no "and" in your response."""
 
-"""
+
+def convert_message_format(messages):
+    """
+    Convert messages from {'sender': str, 'message': str} format
+    to {'role': str, 'parts': [str]} format
+
+    Args:
+        messages (list): List of message dictionaries in old format
+
+    Returns:
+        list: List of message dictionaries in new format
+    """
+    # print("messages", messages, type(messages), dir(messages))
+    if isinstance(messages, list) and messages[0] == "no context":
+        return messages[1]
+    # print([{"role": msg["sender"], "parts": [msg["message"]]} for msg in messages])
+    return messages[0]["message"]  # TODO: figure out chat
 
 
 async def moderate_input(contents: str):
-    return await generate_content(contents=contents, system_instruction = moderation, stop_sequences = ["."])
+    return await generate_content(
+        contents=contents, system_instruction=moderation, stop_sequences=["."]
+    )
+
 
 async def extract_context(contents: str):
-    return await generate_content(contents=contents, system_instruction = identify_relevant_details, stop_sequences = ["."])
+    return await generate_content(
+        contents=contents,
+        system_instruction=identify_relevant_details,
+        stop_sequences=["."],
+    )
+
 
 async def determine_strategy(contents: list[str]):
-    return await generate_content(contents=contents, system_instruction = identify_strategy, stop_sequences = ["."])
+    return await generate_content(
+        contents=contents, system_instruction=identify_strategy, stop_sequences=["."]
+    )
+
 
 async def generate_queryResp(contents: list[str]):
-    return await generate_content(contents=contents, system_instruction = identitfy_userpref, stop_sequences = [">"])
+    return await generate_content(
+        contents=contents, system_instruction=identitfy_userpref, stop_sequences=[">"]
+    )
+
 
 async def generate_inspire_content(contents: list[str]):
-    return await generate_content(contents=contents, system_instruction = inspire_user, stop_sequences = ["."])
+    return await generate_content(
+        contents=contents, system_instruction=inspire_user, stop_sequences=["."]
+    )
+
 
 async def generate_answer_content(contents: list[str]):
-    return await generate_content(contents=contents, system_instruction = answer_user, stop_sequences = ["."])
+    return await generate_content(
+        contents=contents, system_instruction=answer_user, stop_sequences=["."]
+    )
+
 
 async def generate_content(
     contents: str | list[str],
     system_instruction: str,
     stop_sequences: list[str] | None = None,
 ) -> str:
+    contents = (
+        contents if isinstance(contents, str) else convert_message_format(contents)
+    )
     response = await client.aio.models.generate_content(
         model="gemini-2.0-flash-exp",
         contents=contents,
