@@ -24,7 +24,7 @@ def shutdown():
     dbclient.CloseClient()
 atexit.register(shutdown)
 
-# auth section
+# section
 @app.route("/getsession")
 def getSession():
     session = request.args.get('session')
@@ -32,9 +32,9 @@ def getSession():
     if session != None:
         retr = sessions.GetSession(session)
         if retr:
-            return  "Created long ago at " + retr, 200
+            return  retr, 200
         else:
-            return "created " + sessions.CreateSession().date_modified, 200
+            return sessions.CreateSession(), 200
     else:
         return "No Session specificed",  400
 
