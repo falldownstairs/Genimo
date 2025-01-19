@@ -115,7 +115,7 @@ The resulting output must:
 Important details:
 - Generalize real world examples into underlying concepts that one might find in a textbook, and keep it highly specific.
 - Avoid real world analogies, strictly answer with concepts.
-- Respond with strictly a single, distinct concept, there should be no "and" in your response."""
+- Respond with strictly a single, distinct concept."""
 
 
 def convert_message_format(messages):
