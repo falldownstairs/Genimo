@@ -138,7 +138,6 @@ def convert_message_format(messages):
 
 
 async def moderate_input(contents: str):
-    client.aio.chats.create()
     return await generate_content(
         contents=contents, system_instruction=moderation, stop_sequences=["."]
     )
