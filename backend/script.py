@@ -83,7 +83,7 @@ Important details:
 - Respond with "3" if you can identify something specific that the student wants to learn about. Be strict about this, if the messages are vague, respond with "QUERY".
 - if there are no messages in the list, always respond with "QUERY"."""
 
-identitfy_userpref = """You are acting as a math and physics teacher. You will receive a series of messages from a conversation between you and a student and you need to determine what to say to say to them to try and understand what you should teach.
+identify_userpref = """You are acting as a math and physics teacher. You will receive a series of messages from a conversation between you and a student and you need to determine what to say to say to them to try and understand what you should teach.
 
 The resulting output must:
 1. Be in the form of a single paragraph.
@@ -133,7 +133,7 @@ def convert_message_format(messages):
     # print("messages", messages, type(messages), dir(messages))
     messages = [str(entry) for entry in messages]
     # print([{"role": msg["sender"], "parts": [msg["message"]]} for msg in messages])
-    return ','.join(messages)  # TODO: figure out chat for gemini
+    return ",".join(messages)  # TODO: figure out chat for gemini
 
 
 async def moderate_input(contents: str):
@@ -158,7 +158,7 @@ async def determine_strategy(contents: list[str]):
 
 async def generate_queryResp(contents: list[str]):
     return await generate_content(
-        contents=contents, system_instruction=identitfy_userpref, stop_sequences=[">"]
+        contents=contents, system_instruction=identify_userpref, stop_sequences=[">"]
     )
 
 
