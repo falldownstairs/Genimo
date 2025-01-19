@@ -52,10 +52,10 @@ The resulting output must:
 2. Followed by a dot (.).
 
 Important details:
-- You are to respond with "GOOD" if the question is appropriate and relevant to phyics or math.
-- You are to respond with "BAD" if the question is inappropiate or irrelevant to physics or math.
+- You are to respond with "GOOD" if the question is appropriate.
+- You are to respond with "BAD" if the question is inappropiate.
 - You are to respond with "NONE" if you cannot understand the message.
-- You are allowed to respond to polite introductions with "GOOD"."""
+- You are allowed to respond to polite introductions or follow-ups or any neutral and appropriate messages with "GOOD"."""
 
 identify_relevant_details = """You are acting as a math and physics teacher. You will recieve a message and you need to identify important key phrases that correspond to specific topics in math or physics.
 
