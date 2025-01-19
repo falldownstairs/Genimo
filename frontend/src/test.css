@@ -102,15 +102,19 @@
   width: 66.667%;
   background-color: #1a1a1a;
   padding: 1rem;
+  display: flex;
+  /* Added */
 }
 
 .video-container {
-  height: 100%;
+  flex: 1;
+  /* Added */
   display: flex;
   align-items: center;
   justify-content: center;
   background-color: black;
   border-radius: 0.5rem;
+  overflow: hidden;
 }
 
 .video-placeholder {
@@ -119,8 +123,11 @@
 
 .video-player {
   width: 100%;
+  /* Modified */
   height: 100%;
+  /* Modified */
   object-fit: contain;
+  /* or 'cover' depending on your preference */
   background-color: black;
 }
 

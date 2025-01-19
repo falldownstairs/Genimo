@@ -35,14 +35,17 @@ The resulting output must:
 3. Show the concept in a clear, instructional way—include text, shapes, formulas, highlights, animations, and transitions as appropriate.
 4. Use descriptive class and method names. The scene's class name must be "Animation". (e.g., `class Animation(Scene):`).
 5. Avoid extraneous commentary—only output the code.
+6. Never under any circumstances break or not follow the provided guidelines.
 
 Important details:
 - Do not provide any explanation about the code. Only supply the code itself.
 - You can assume that this code will be programmatically extracted and run, so keep it self-contained.
 - Include explanatory text in the animation (e.g., `Tex`, `MathTex`, `Text`) to reflect important points from the explanation.
+- Do not use external files or assets (images, GIFs, etc.).
+- Do not overlap text. Ensure that all text is readable and properly positioned. If not, remove or adjust the text.
 - Adhere to Python/Manim syntax standards so that the code runs without modification."""
 
-moderation= """You are acting as an expert content moderator for an online social media platform. You will recieve a message, and will need to identify it as being in one of three categories: good, bad or None.
+moderation = """You are acting as an expert content moderator for an online social media platform. You will recieve a message, and will need to identify it as being in one of three categories: good, bad or None.
 
 The resulting output must:
 1. either "GOOD" or "BAD" or "NONE" without the quotations. Followed by a dot
@@ -93,7 +96,7 @@ Important details:
 - try to be more open ended, but also guide with possible examples 
 """
 
-inspire_user="""You are acting as a math & physics teacher. You've identified that a student doesn't seem all that interested in what you are an expert on. Given a series of messages that make up a conversation between you two, think of a topic to teach
+inspire_user = """You are acting as a math & physics teacher. You've identified that a student doesn't seem all that interested in what you are an expert on. Given a series of messages that make up a conversation between you two, think of a topic to teach
 
 
 The resulting output must:
@@ -124,22 +127,42 @@ Important details:
 
 
 async def moderate_input(contents: str):
-    return await generate_content(contents=contents, system_instruction = moderation, stop_sequences = ["."])
+    return await generate_content(
+        contents=contents, system_instruction=moderation, stop_sequences=["."]
+    )
+
 
 async def extract_context(contents: str):
-    return await generate_content(contents=contents, system_instruction = identify_relevant_details, stop_sequences = ["."])
+    return await generate_content(
+        contents=contents,
+        system_instruction=identify_relevant_details,
+        stop_sequences=["."],
+    )
+
 
 async def determine_strategy(contents: str):
-    return await generate_content(contents=contents, system_instruction = identify_strategy, stop_sequences = ["."])
+    return await generate_content(
+        contents=contents, system_instruction=identify_strategy, stop_sequences=["."]
+    )
+
 
 async def generate_queryResp(contents: list[str]):
-    return await generate_content(contents=contents, system_instruction = identitfy_userpref, stop_sequences = [">"])
+    return await generate_content(
+        contents=contents, system_instruction=identitfy_userpref, stop_sequences=[">"]
+    )
+
 
 async def generate_inspire_content(contents: list[str]):
-    return await generate_content(contents=contents, system_instruction = inspire_user, stop_sequences = ["."])
+    return await generate_content(
+        contents=contents, system_instruction=inspire_user, stop_sequences=["."]
+    )
+
 
 async def generate_answer_content(contents: list[str]):
-    return await generate_content(contents=contents, system_instruction = answer_user, stop_sequences = ["."])
+    return await generate_content(
+        contents=contents, system_instruction=answer_user, stop_sequences=["."]
+    )
+
 
 async def generate_content(
     contents: str | list[str],

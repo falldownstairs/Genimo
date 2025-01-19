@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useState } from 'react';
 import './test.css';
 
 const VideoChatInterface = () => {
@@ -6,18 +6,6 @@ const VideoChatInterface = () => {
   const [inputMessage, setInputMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [videoUrl, setVideoUrl] = useState(null);
-  const [sessionId, setSessionId] = useState(null);
-  const videoRef = useRef(null);
-
-  // Fetch session ID on component mount
-  useEffect(() => {
-    const fetchSession = async () => {
-      const response = await fetch('http://localhost:2341/getsession');
-      const data = await response.json();
-      setSessionId(data._id);
-    };
-    fetchSession();
-  }, []);
 
   // Function to send a message to the backend
   const handleSubmit = async (e) => {
@@ -36,47 +24,32 @@ const VideoChatInterface = () => {
     setIsLoading(true);
 
     try {
-      const response = await fetch(`http://localhost:2341/messages?session=${sessionId}`, {
+      const response = await fetch('http://localhost:2341/messages', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ msg: inputMessage }),
       });
+
       const result = await response.json();
 
       if (result.video_url) {
-        pollForVideo(result.video_url);
+        setVideoUrl(`http://localhost:2341${result.video_url}`);
       } else {
         setMessages((prev) => [
           ...prev,
           {
             id: Date.now(),
-            text: result,
+            text: result.response,
             sender: 'bot',
             timestamp: new Date().toLocaleTimeString(),
           },
         ]);
-        setIsLoading(false);
       }
+      setIsLoading(false);
     } catch (error) {
       console.error('Error sending message:', error);
       setIsLoading(false);
     }
-  };
-
-  // Poll the backend for video availability
-  const pollForVideo = (videoUrl) => {
-    const interval = setInterval(async () => {
-      try {
-        const response = await fetch(`http://localhost:2341${videoUrl}`);
-        if (response.ok) {
-          setVideoUrl(`http://localhost:2341${videoUrl}`);
-          setIsLoading(false);
-          clearInterval(interval);
-        }
-      } catch {
-        // Keep polling if the video is not ready
-      }
-    }, 5000);
   };
 
   return (
@@ -126,7 +99,11 @@ const VideoChatInterface = () => {
       <div className="video-section">
         <div className="video-container">
           {videoUrl ? (
-            <video controls width="600" src={videoUrl}>
+            <video 
+              controls 
+              className="video-player"
+              src={videoUrl}
+            >
               Your browser does not support the video tag.
             </video>
           ) : (
