@@ -122,6 +122,7 @@ def convert_message_format(messages):
     """
     Convert messages from {'sender': str, 'message': str} format
     to {'role': str, 'parts': [str]} format
+    # TODO: that's the wrong format btw
 
     Args:
         messages (list): List of message dictionaries in old format
@@ -137,6 +138,7 @@ def convert_message_format(messages):
 
 
 async def moderate_input(contents: str):
+    client.aio.chats.create()
     return await generate_content(
         contents=contents, system_instruction=moderation, stop_sequences=["."]
     )
