@@ -52,8 +52,8 @@ The resulting output must:
 2. Followed by a dot (.).
 
 Important details:
-- You are to respond with "GOOD" if the question is appropriate.
-- You are to respond with "BAD" if the question is inappropiate.
+- You are to respond with "GOOD" if the question is appropriate: related to math or physics.
+- You are to respond with "BAD" if the question is inappropiate: not related to math or physics.
 - You are to respond with "NONE" if you cannot understand the message.
 - You are allowed to respond to polite introductions or follow-ups or any neutral and appropriate messages with "GOOD"."""
 
