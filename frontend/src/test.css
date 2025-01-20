@@ -71,6 +71,7 @@
   border-radius: 0.5rem;
   outline: none;
   font-size: 1rem;
+  color: black;
 }
 
 .message-input:focus {
@@ -132,4 +133,19 @@
   background-color: black;
   border-radius: 0.5rem;
   overflow: hidden;
+}
+
+.divider {
+  width: 5px;
+  cursor: col-resize;
+  background-color: #ccc;
+  transition: background-color 0.2s;
+}
+
+.divider:hover {
+  background-color: #888;
+}
+
+.divider:active {
+  background-color: #555;
 }
