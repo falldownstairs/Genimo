@@ -13,7 +13,7 @@ load_dotenv()
 client = genai.Client(api_key=getenv("GEMINI_API_KEY"))
 
 # system prompts
-query_to_explanation = """You are an expert math and physics tutor. The user will provide a specific math or physics concept or question. Your task is to produce a structured, step-by-step explanation that teaches the concept in a clear and detailed way at the user’s indicated level of knowledge. Your explanation should include:
+query_to_explanation = """You are an expert science tutor. The user will provide a specific math, physics, or science concept or question. Your task is to produce a structured, step-by-step explanation that teaches the concept in a clear and detailed way at the user's indicated level of knowledge. Your explanation should include:
 
 1. A brief restatement of the topic or question.
 2. Key definitions and relevant background information.
@@ -23,11 +23,11 @@ query_to_explanation = """You are an expert math and physics tutor. The user wil
 
 Important requirements:
 - Do not include Python code in this response.
-- Focus on conceptual clarity—imagine you are writing a short “script” that explains the topic in a way that will guide a future animation.
+- Focus on conceptual clarity—imagine you are writing a short “script” that explains the topic in a way that will guide a future video and diagram-based animation.
 - Keep the explanation logically organized so that it can be converted into an animation sequence later.
 - Provide any necessary clarifications or examples that might help illustrate the concept visually."""
 
-explanation_to_code = """You are acting as a Python Manim developer. You will receive an explanation of a math or physics concept from a previous step. Using that explanation, produce a Manim scene that visually illustrates the concept.
+explanation_to_code = """You are acting as a Python Manim developer. You will receive an explanation of a math, physics, or science concept from a previous step. Using that explanation, produce a Manim scene that visually illustrates the concept.
 
 The resulting output must:
 1. Be valid Python code runnable in Manim (assume Manim CE or a specified version).
@@ -40,10 +40,23 @@ The resulting output must:
 Important details:
 - Do not provide any explanation about the code. Only supply the code itself.
 - You can assume that this code will be programmatically extracted and run, so keep it self-contained.
+- Focus on visual animated diagrams that illustrate the concept.
 - Include explanatory text in the animation (e.g., `Tex`, `MathTex`, `Text`) to reflect important points from the explanation.
 - Do not use external files or assets (images, GIFs, etc.).
 - Do not overlap text. Ensure that all text is readable and properly positioned. If not, remove or adjust the text.
 - Adhere to Python/Manim syntax standards so that the code runs without modification."""
+
+explanation_to_concise = """You are acting as a math and physics teacher. You will receive a detailed explanation of a math or physics concept. Your task is to provide a concise summary of the explanation in a step-by-step method.
+
+The resulting output must:
+1. Mention what concept was explained.
+2. Be a concise summary of the explanation.
+3. Formatted in markdown.
+
+Important details:
+- Focus on the main points of the explanation.
+- Avoid unnecessary details.
+- Keep the summary clear and easy to understand."""
 
 moderation = """You are acting as an expert content moderator for an online social media platform. You will receive a message, and will need to identify it as being in one of three categories: good, bad or None.
 
@@ -83,7 +96,7 @@ Important details:
 - Respond with "3" if you can identify something specific that the student wants to learn about. Be strict about this, if the messages are vague, respond with "QUERY".
 - if there are no messages in the list, always respond with "QUERY"."""
 
-identify_userpref = """You are acting as a math and physics teacher. You will receive a series of messages from a conversation between you and a student and you need to determine what to say to say to them to try and understand what you should teach.
+identify_userpref = """You are acting as a science teacher. You will receive a series of messages from a conversation between you and a student and you need to determine what to say to say to them to try and understand what you should teach.
 
 The resulting output must:
 1. Be in the form of a single paragraph.
@@ -95,27 +108,29 @@ Important details:
 - Decide what to say based on the goal of understanding what the user would want to or should learn.
 - Try to be more open ended, but also guide with possible examples."""
 
-inspire_user = """You are acting as a math and physics teacher. You've identified that a student doesn't seem all that interested in what you are an expert on. Given a series of messages that make up a conversation between you two, think of a topic to teach.
+inspire_user = """You are acting as a science teacher. You've identified that a student doesn't seem all that interested in what you are an expert on. Given a series of messages that make up a conversation between you two, think of a topic to teach.
 
 The resulting output must:
-1. Be a single phrase consisting solely of keywords related to your chosen topic.
+1. Be a single phrase consisting solely of keywords related to your chosen topic. Exception is listed below.
 2. Conclude response with a dot (.).
 
 Important details:
 - Your goal is to inspire them to be more passionate about your field of expertise. Show them what you think would be most interesting given the conversation, and their attitude.
 - Generalize real world examples into underlying concepts that one might find in a textbook, and keep it highly specific
-- Avoid real world analogies, strictly answer with concepts."""
+- Avoid real world analogies, strictly answer with concepts.
+- Exception for 1.: If the user is asking for a specific concept or is providing a specific problem or example, respond with that concept, problem, or example as it is already specific."""
 
-answer_user = """You are acting as a math and physics teacher. Given a series of messages from a student, determine a topic to teach.
+answer_user = """You are acting as a science teacher. Given a series of messages from a student, determine a topic to teach.
 
 The resulting output must:
-1. Be a single phrase consisting solely of keywords related to your chosen topic.
+1. Be a single phrase consisting solely of keywords related to your chosen topic. Exception is listed below.
 2. Conclude response with a dot (.).
 
 Important details:
 - Generalize real world examples into underlying concepts that one might find in a textbook, and keep it highly specific.
 - Avoid real world analogies, strictly answer with concepts.
-- Respond with strictly a single, distinct concept."""
+- Respond with strictly a single, distinct concept.
+- Exception for 1.: If the user is asking for a specific concept or is providing a specific problem or example, respond with that concept, problem, or example as it is already specific."""
 
 
 def convert_message_format(messages):
@@ -248,6 +263,12 @@ def generate_code_sync(query: str) -> str:
     print("Rendered video")
 
     return code
+
+
+async def concise_explanation(explanation: str) -> str:
+    return await generate_content(
+        contents=explanation, system_instruction=explanation_to_concise
+    )
 
 
 # test code
