@@ -6,6 +6,7 @@ import os
 from flask import Flask, Response, abort, request, send_file
 from flask_cors import CORS
 from script import (
+    concise_explanation,
     determine_strategy,
     explanation_to_code,
     extract_context,
@@ -198,19 +199,20 @@ def processStreamMsg():
         else:
             promptToUse = await generate_inspire_content(sessions.GetMessages(session))
 
-        ymessage += f"\nI'll explain about: {promptToUse}"
+        ymessage += f"\n\nI'll explain about: {promptToUse}"
 
         yield f"data: {json.dumps({'type': 'status', 'message': ymessage})}\n\n"
 
         # Generate explanation
-        ymessage += "\nI'm thinking of an explanation..."
+        ymessage += "\n\nI'm thinking of an explanation..."
         yield f"data: {json.dumps({'type': 'status', 'message': ymessage})}\n\n"
 
         explanation = await generate_content(promptToUse, query_to_explanation)
+        concise_explanation_text = await concise_explanation(explanation)
         print("Received explanation")
 
         # Generate code
-        ymessage += "\nI'm building the animations..."
+        ymessage += "\n\nI'm building the animations..."
         yield f"data: {json.dumps({'type': 'status', 'message': ymessage})}\n\n"
 
         code = await generate_content(explanation, explanation_to_code)
@@ -219,8 +221,9 @@ def processStreamMsg():
         print("Received code")
 
         # Render video
-        ymessage += "\nI'm rendering the video..."
+        ymessage += "\n\nI'm rendering the video..."
         yield f"data: {json.dumps({'type': 'status', 'message': ymessage})}\n\n"
+        yield f"data: {json.dumps({'type': 'vid_message', 'message': concise_explanation_text})}\n\n"
 
         render_video(code)
         print("Rendered video")
