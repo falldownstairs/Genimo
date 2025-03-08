@@ -12,6 +12,8 @@ load_dotenv()
 
 client = genai.Client(api_key=getenv("GEMINI_API_KEY"))
 
+model = "gemini-2.0-flash"
+
 # system prompts
 query_to_explanation = """You are an expert science tutor. The user will provide a specific math, physics, or science concept or question. Your task is to produce a structured, step-by-step explanation that teaches the concept in a clear and detailed way at the user's indicated level of knowledge. Your explanation should include:
 
@@ -118,7 +120,7 @@ Important details:
 - Your goal is to inspire them to be more passionate about your field of expertise. Show them what you think would be most interesting given the conversation, and their attitude.
 - Generalize real world examples into underlying concepts that one might find in a textbook, and keep it highly specific
 - Avoid real world analogies, strictly answer with concepts.
-- Exception for 1.: If the user is asking for a specific concept or is providing a specific problem or example, respond with that concept, problem, or example as it is already specific."""
+- Exception for 1.: If the user is asking for a specific concept (includes the word "specifically") or is providing a specific problem or example, respond with that concept, problem, or example as it is already specific."""
 
 answer_user = """You are acting as a science teacher. Given a series of messages from a student, determine a topic to teach.
 
@@ -130,7 +132,7 @@ Important details:
 - Generalize real world examples into underlying concepts that one might find in a textbook, and keep it highly specific.
 - Avoid real world analogies, strictly answer with concepts.
 - Respond with strictly a single, distinct concept.
-- Exception for 1.: If the user is asking for a specific concept or is providing a specific problem or example, respond with that concept, problem, or example as it is already specific."""
+- Exception for 1.: If the user is asking for a specific concept (includes the word "specifically") or is providing a specific problem or example, respond with that concept, problem, or example as it is already specific."""
 
 
 def convert_message_format(messages):
@@ -198,7 +200,7 @@ async def generate_content(
         contents if isinstance(contents, str) else convert_message_format(contents)
     )
     response = await client.aio.models.generate_content(
-        model="gemini-2.0-flash-exp",
+        model=model,
         contents=contents,
         config=types.GenerateContentConfig(
             system_instruction=system_instruction,
@@ -215,7 +217,7 @@ def generate_content_sync(
     stop_sequences: list[str] | None = None,
 ) -> str:
     response = client.models.generate_content(
-        model="gemini-2.0-flash-exp",
+        model=model,
         contents=contents,
         config=types.GenerateContentConfig(
             system_instruction=system_instruction,
@@ -273,5 +275,7 @@ async def concise_explanation(explanation: str) -> str:
 
 # test code
 if __name__ == "__main__":
-    query: str = "gravity"
+    query: str = (
+        "Tell me about trigonometry, the unit circle, and the special triangles."
+    )
     asyncio.run(generate_code(query))
